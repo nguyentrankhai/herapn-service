@@ -1,0 +1,48 @@
+module.exports = {
+  apps: [{
+      name: 'hera_backend',
+      append_env_to_name: true,
+      script: 'server.js',
+      instances: 4,
+      autorestart: true,
+      max_memory_restart: '1G',
+      env: { // common env variable
+          NODE_ENV: 'test',
+          PORT: 5001
+      },
+      env_test: {
+          NODE_ENV: "test",
+          PORT: 5000
+      },
+      env_production: { // khi deploy với option --env production
+          NODE_ENV: "production",
+          PORT: 5000
+      },
+      env_development: { // khi deploy với option --env development
+          NODE_ENV: "development",
+          PORT: 3000
+      },
+  }],
+
+  deploy: {
+      test: {
+          user: 'developer', // user để ssh
+          host: '192.168.123.123', // IP của server này (theo sơ đồ)
+          ref: 'origin/main', // branch để pull source
+          repo: 'git@github.com:nguyenduongbichduyen/HeraPN.git', // repo của project
+          path: '/home/developer/herapn/server', // sẽ deploy vào thư mục này
+         // 'post-deploy': 'yarn install && pm2 startOrRestart ecosystem.config.js --env test' // cmd để deploy
+          'post-deploy': 'ssh-keyscan -H 192.168.123.123 >> ~/.ssh/known_hosts && yarn install && pm2 startOrRestart ecosystem.config.js --env test'
+
+      },
+	production: {
+          user: 'developer', // user để ssh
+          host: '192.168.123.123', // IP của server này (theo sơ đồ)
+          ref: 'origin/main', // branch để pull source
+          repo: 'git@github.com:nguyenduongbichduyen/HeraPN.git', // repo của project
+          path: '/home/developer/herapn/service', // sẽ deploy vào thư mục này
+         // 'post-deploy': 'yarn install && pm2 startOrRestart ecosystem.config.js --env production' // cmd để deploy         
+	'post-deploy': 'npm i && npm start && pm2 startOrGracefulReload ecosystem.config.js --env production'
+      },
+  }
+};
